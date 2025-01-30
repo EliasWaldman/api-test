@@ -19,29 +19,19 @@ class TaskController extends Controller
     {
         $query = Task::query();
 
-        // Поиск по названию
         if ($request->has('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        // Сортировка
         if ($request->has('sort')) {
             $query->orderBy($request->sort);
         }
 
-        // Пагинация
         $tasks = $query->paginate(10);
 
-        // Возвращаем данные через TaskResource
         return TaskResource::collection($tasks);
     }
 
-    /**
-     * Создать новую задачу.
-     *
-     * @param Request $request
-     * @return TaskResource
-     */
     public function store(Request $request)
     {
         // Валидация данных
@@ -54,7 +44,6 @@ class TaskController extends Controller
             'status' => 'nullable|string|in:выполнена,не выполнена',
         ]);
 
-        // Создание задачи
         $task = Task::create([
             'title' => $request->title,
             'description' => $request->description,
@@ -65,34 +54,18 @@ class TaskController extends Controller
             'status' => $request->status ?? 'не выполнена',
         ]);
 
-        // Возвращаем созданную задачу через TaskResource
         return new TaskResource($task);
     }
-
-    /**
-     * Получить задачу по ID.
-     *
-     * @param int $id
-     * @return TaskResource
-     */
     public function show($id)
     {
         $task = Task::findOrFail($id);
         return new TaskResource($task);
     }
 
-    /**
-     * Обновить задачу.
-     *
-     * @param Request $request
-     * @param int $id
-     * @return TaskResource
-     */
     public function update(Request $request, $id)
     {
         $task = Task::findOrFail($id);
 
-        // Валидация данных
         $request->validate([
             'title' => 'sometimes|string|max:255',
             'description' => 'nullable|string',
@@ -102,19 +75,11 @@ class TaskController extends Controller
             'status' => 'nullable|string|in:выполнена,не выполнена',
         ]);
 
-        // Обновление задачи
         $task->update($request->all());
 
-        // Возвращаем обновленную задачу через TaskResource
         return new TaskResource($task);
     }
 
-    /**
-     * Удалить задачу.
-     *
-     * @param int $id
-     * @return \Illuminate\Http\JsonResponse
-     */
     public function destroy($id)
     {
         $task = Task::findOrFail($id);
