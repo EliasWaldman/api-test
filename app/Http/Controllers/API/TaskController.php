@@ -35,8 +35,17 @@ class TaskController extends Controller
 
     public function store(TaskRequest $request)
     {
-        $task = Task::create($request->validated());
-        return response()->json(['id' => $task->id, 'message' => 'Task created successfully'], 201);
+        $task = Task::create([
+            'title' => $request->title,
+            'description' => $request->description,
+            'deadline' => $request->deadline,
+            'create_date' => now(),
+            'priority' => $request->priority ?? 'низкий',
+            'category' => $request->category,
+            'status' => $request->status ?? 'не выполнена',
+        ]);
+
+        return new TaskResource($task);
     }
     public function show($id)
     {
@@ -46,7 +55,7 @@ class TaskController extends Controller
 
     public function update(TaskRequest $request, $id)
     {
-        $task = Task::findOrFail($id);
+        $task = Task::find($id);
 
         $task->update($request->all());
 
