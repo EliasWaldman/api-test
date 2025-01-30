@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\API;
 
 use App\Http\Controllers\Controller;
+use App\Http\Requests\TaskRequest;
 use App\Http\Resources\TaskResource;
 use App\Models\Task;
 use Illuminate\Http\Request;
@@ -32,29 +33,10 @@ class TaskController extends Controller
         return TaskResource::collection($tasks);
     }
 
-    public function store(Request $request)
+    public function store(TaskRequest $request)
     {
-        // Валидация данных
-        $request->validate([
-            'title' => 'required|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'required|date',
-            'priority' => 'nullable|string|in:низкий,средний,высокий',
-            'category' => 'nullable|string',
-            'status' => 'nullable|string|in:выполнена,не выполнена',
-        ]);
-
-        $task = Task::create([
-            'title' => $request->title,
-            'description' => $request->description,
-            'due_date' => $request->due_date,
-            'create_date' => now(),
-            'priority' => $request->priority ?? 'низкий',
-            'category' => $request->category,
-            'status' => $request->status ?? 'не выполнена',
-        ]);
-
-        return new TaskResource($task);
+        $task = Task::create($request->validated());
+        return response()->json(['id' => $task->id, 'message' => 'Task created successfully'], 201);
     }
     public function show($id)
     {
@@ -62,18 +44,9 @@ class TaskController extends Controller
         return new TaskResource($task);
     }
 
-    public function update(Request $request, $id)
+    public function update(TaskRequest $request, $id)
     {
         $task = Task::findOrFail($id);
-
-        $request->validate([
-            'title' => 'sometimes|string|max:255',
-            'description' => 'nullable|string',
-            'due_date' => 'sometimes|date',
-            'priority' => 'nullable|string|in:низкий,средний,высокий',
-            'category' => 'nullable|string',
-            'status' => 'nullable|string|in:выполнена,не выполнена',
-        ]);
 
         $task->update($request->all());
 
